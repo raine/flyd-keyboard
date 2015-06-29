@@ -1,0 +1,20 @@
+{
+  "name": "flyd-keyboard",
+  "version": "1.0.0",
+  "description": "Drop repeated values with Flyd",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Raine Virta <raine.virta@gmail.com>",
+  "repository": "raine/flyd-keyboard",
+  "license": "MIT",
+  "dependencies": {
+    "flyd": "^0.1.13",
+    "flyd-droprepeats": "^1.0.1"
+  },
+  "devDependencies": {
+    "babelify": "^6.1.2",
+    "ramda": "^0.15.1"
+  }
+}
