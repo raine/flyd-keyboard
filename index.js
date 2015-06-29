@@ -1,5 +1,5 @@
 var stream = require('flyd').stream;
-var dropRepeats = require('flyd-droprepeats');
+var dropRepeatsWith = require('flyd-droprepeats').dropRepeatsWith;
 
 module.exports.arrows = function(elem) {
   var l = stream(false);
@@ -22,7 +22,7 @@ module.exports.arrows = function(elem) {
   }, false);
 
 
-  return dropRepeats(eqCoords, stream([l, r, u, d], function() {
+  return dropRepeatsWith(eqCoords, stream([l, r, u, d], function() {
     return {
       x: l() ? -1 : r() ? 1 : 0,
       y: u() ? -1 : d() ? 1 : 0
