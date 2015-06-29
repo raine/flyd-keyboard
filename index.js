@@ -1,7 +1,24 @@
 var stream = require('flyd').stream;
+var dropRepeats = require('flyd-droprepeats').dropRepeats;
 var dropRepeatsWith = require('flyd-droprepeats').dropRepeatsWith;
+var keycode = require('keycode');
 
-module.exports.arrows = function(elem) {
+exports.key = function(key) {
+  var ks = stream(false);
+  var code = keycode(key);
+
+  document.addEventListener('keydown', function(ev) {
+    if (ev.keyCode === code) ks(true);
+  }, false);
+
+  document.addEventListener('keyup', function(ev) {
+    if (ev.keyCode === code) ks(false);
+  }, false);
+
+  return dropRepeats(ks);
+};
+
+exports.arrows = function(elem) {
   var l = stream(false);
   var r = stream(false);
   var u = stream(false);

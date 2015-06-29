@@ -11,7 +11,8 @@
   "license": "MIT",
   "dependencies": {
     "flyd": "^0.1.13",
-    "flyd-droprepeats": "^2.0.0"
+    "flyd-droprepeats": "^2.0.0",
+    "keycode": "^2.1.0"
   },
   "devDependencies": {
     "babelify": "^6.1.2",
