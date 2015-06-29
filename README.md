@@ -2,13 +2,11 @@
 
 Keyboard as [Flyd](https://github.com/paldepind/flyd) streams.
 
-__Usage__
+__Arrows__
 
 ```js
 var kb = require('flyd-keyboard')
 var arrows$ = kb.arrows();
 ```
 
-__Example__
-
-
+[Example](http://raine.github.io/flyd-keyboard/)
