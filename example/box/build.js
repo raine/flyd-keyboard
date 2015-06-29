@@ -4,6 +4,7 @@
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
 var flyd = require('flyd');
+var kb = require('../../');
 var stream = flyd.stream;
 
 var _require = require('ramda');
@@ -75,7 +76,7 @@ var move = function move(dir, space, model) {
   });
 };
 
-var arrows$ = require('../').arrows();
+var arrows$ = kb.arrows();
 flyd.on(console.log.bind(console), arrows$);
 
 var box = document.getElementById('box');
@@ -88,11 +89,11 @@ var printStreams = pipe(unapply(identity), zipObj(['arrows', 'box']), stringify,
 
 liftN(2, printStreams)(arrows$, model$);
 
-},{"../":2,"flyd":4,"ramda":11}],2:[function(require,module,exports){
+},{"../../":2,"flyd":4,"ramda":11}],2:[function(require,module,exports){
 'use strict';
 
 var stream = require('flyd').stream;
-var dropRepeats = require('flyd-droprepeats');
+var dropRepeatsWith = require('flyd-droprepeats').dropRepeatsWith;
 
 module.exports.arrows = function (elem) {
   var l = stream(false);
@@ -108,7 +109,7 @@ module.exports.arrows = function (elem) {
     if (ev.keyCode === 37) l(false);else if (ev.keyCode === 39) r(false);else if (ev.keyCode === 38) u(false);else if (ev.keyCode === 40) d(false);
   }, false);
 
-  return dropRepeats(eqCoords, stream([l, r, u, d], function () {
+  return dropRepeatsWith(eqCoords, stream([l, r, u, d], function () {
     return {
       x: l() ? -1 : r() ? 1 : 0,
       y: u() ? -1 : d() ? 1 : 0
@@ -123,12 +124,7 @@ function eqCoords(a, b) {
 },{"flyd":4,"flyd-droprepeats":3}],3:[function(require,module,exports){
 var flyd = require('flyd');
 
-module.exports = function(eq, s) {
-  if (flyd.isStream(eq)) {
-    s  = eq;
-    eq = strictEq;
-  }
-
+function dropRepeatsWith(eq, s) {
   var prev;
   return flyd.stream([s], function(self) {
     if (!eq(s.val, prev)) {
@@ -136,7 +132,13 @@ module.exports = function(eq, s) {
       prev = s.val;
     }
   });
+}
+
+exports.dropRepeats = function(s) {
+  return dropRepeatsWith(strictEq, s);
 };
+
+exports.dropRepeatsWith = flyd.curryN(2, dropRepeatsWith);
 
 function strictEq(a, b) {
   return a === b;
