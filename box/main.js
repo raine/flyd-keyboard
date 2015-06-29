@@ -1,4 +1,5 @@
 const flyd = require('flyd');
+const kb = require('../../');
 const {stream} = flyd;
 const {__, liftN, curry, pipe, always, merge, props, apply, identity, unapply, partialRight, zipObj} = require('ramda');
 
@@ -49,7 +50,7 @@ const move = function(dir, space, model) {
   });
 };
 
-const arrows$ = require('../').arrows();
+const arrows$ = kb.arrows();
 flyd.on(console.log.bind(console), arrows$);
 
 const box = document.getElementById('box');

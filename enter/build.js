@@ -1,25 +1,20 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
-
 var flyd = require('flyd');
+var kb = require('../../');
 var stream = flyd.stream;
 
 var _require = require('ramda');
 
 var __ = _require.__;
-var liftN = _require.liftN;
 var curry = _require.curry;
 var pipe = _require.pipe;
-var always = _require.always;
-var merge = _require.merge;
-var props = _require.props;
-var apply = _require.apply;
-var identity = _require.identity;
-var unapply = _require.unapply;
 var partialRight = _require.partialRight;
-var zipObj = _require.zipObj;
+var T = _require.T;
+var add = _require.add;
+var liftN = _require.liftN;
+var join = _require.join;
 
 var setProp = curry(function (prop, value, obj) {
   return obj[prop] = value;
@@ -27,74 +22,43 @@ var setProp = curry(function (prop, value, obj) {
 var setInnerHTML = setProp('innerHTML');
 var stringify = partialRight(JSON.stringify, null, 2);
 
-var setPos = curry(function (elem, left, top) {
-  elem.style.left = left + 'px';
-  elem.style.top = top + 'px';
-});
+var enter$ = kb.key('enter');
+var times$ = flyd.scan(add, 0, enter$.map(Number));
+// flyd.on(console.log.bind(console), enter$)
 
-var fps$ = (function () {
-  var oldTime = +new Date();
-  var s = flyd.stream();
-  (function frame(time) {
-    window.requestAnimationFrame(frame);
-    var d = time - oldTime;
-    if (d > 0) s(1000 / d);
-    oldTime = time;
-  })();
-  return s;
-})();
-
-var init = always({
-  x: 300,
-  y: 300,
-  vx: 0,
-  vy: 0
-});
-
-var physics = function physics(t, model) {
-  return merge(model, {
-    x: model.x + t * model.vx,
-    y: model.y + t * model.vy
-  });
+var plural = function plural(word, n) {
+  return word + (n === 1 ? '' : 's');
 };
+var render = pipe(function (state, n) {
+  return ['Enter is ' + (state ? 'down' : 'up') + '.', 'Enter has been pressed ' + n + ' ' + plural('time', n) + '.'];
+}, join('<br>'), setInnerHTML(__, document.body));
 
-var step = function step(model, streams) {
-  var _streams = _slicedToArray(streams, 3);
+liftN(2, render)(enter$, times$);
 
-  var dir = _streams[0];
-  var t = _streams[1];
-  var space = _streams[2];
-
-  return move(dir, space, physics(t, model));
-};
-
-var move = function move(dir, space, model) {
-  return merge(model, {
-    vx: dir.x * (space ? 0.20 : 0.05),
-    vy: dir.y * (space ? 0.20 : 0.05)
-  });
-};
-
-var arrows$ = require('../').arrows();
-flyd.on(console.log.bind(console), arrows$);
-
-var box = document.getElementById('box');
-var render = pipe(props(['x', 'y']), apply(setPos(box)));
-var model$ = flyd.scan(step, init(), liftN(2, unapply(identity))(arrows$, fps$));
-
-flyd.on(render, model$);
-
-var printStreams = pipe(unapply(identity), zipObj(['arrows', 'box']), stringify, setInnerHTML(__, document.getElementById('info')));
-
-liftN(2, printStreams)(arrows$, model$);
-
-},{"../":2,"flyd":4,"ramda":11}],2:[function(require,module,exports){
+},{"../../":2,"flyd":4,"ramda":12}],2:[function(require,module,exports){
 'use strict';
 
 var stream = require('flyd').stream;
-var dropRepeats = require('flyd-droprepeats');
+var dropRepeats = require('flyd-droprepeats').dropRepeats;
+var dropRepeatsWith = require('flyd-droprepeats').dropRepeatsWith;
+var keycode = require('keycode');
 
-module.exports.arrows = function (elem) {
+exports.key = function (key) {
+  var ks = stream(false);
+  var code = keycode(key);
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.keyCode === code) ks(true);
+  }, false);
+
+  document.addEventListener('keyup', function (ev) {
+    if (ev.keyCode === code) ks(false);
+  }, false);
+
+  return dropRepeats(ks);
+};
+
+exports.arrows = function (elem) {
   var l = stream(false);
   var r = stream(false);
   var u = stream(false);
@@ -108,7 +72,7 @@ module.exports.arrows = function (elem) {
     if (ev.keyCode === 37) l(false);else if (ev.keyCode === 39) r(false);else if (ev.keyCode === 38) u(false);else if (ev.keyCode === 40) d(false);
   }, false);
 
-  return dropRepeats(eqCoords, stream([l, r, u, d], function () {
+  return dropRepeatsWith(eqCoords, stream([l, r, u, d], function () {
     return {
       x: l() ? -1 : r() ? 1 : 0,
       y: u() ? -1 : d() ? 1 : 0
@@ -120,15 +84,10 @@ function eqCoords(a, b) {
   return a && b && a.x === b.x && a.y === b.y;
 };
 
-},{"flyd":4,"flyd-droprepeats":3}],3:[function(require,module,exports){
+},{"flyd":4,"flyd-droprepeats":3,"keycode":11}],3:[function(require,module,exports){
 var flyd = require('flyd');
 
-module.exports = function(eq, s) {
-  if (flyd.isStream(eq)) {
-    s  = eq;
-    eq = strictEq;
-  }
-
+function dropRepeatsWith(eq, s) {
   var prev;
   return flyd.stream([s], function(self) {
     if (!eq(s.val, prev)) {
@@ -136,7 +95,13 @@ module.exports = function(eq, s) {
       prev = s.val;
     }
   });
+}
+
+exports.dropRepeats = function(s) {
+  return dropRepeatsWith(strictEq, s);
 };
+
+exports.dropRepeatsWith = flyd.curryN(2, dropRepeatsWith);
 
 function strictEq(a, b) {
   return a === b;
@@ -675,6 +640,155 @@ module.exports = function _slice(args, from, to) {
 };
 
 },{}],11:[function(require,module,exports){
+// Source: http://jsfiddle.net/vWx8V/
+// http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
+
+
+
+/**
+ * Conenience method returns corresponding value for given keyName or keyCode.
+ *
+ * @param {Mixed} keyCode {Number} or keyName {String}
+ * @return {Mixed}
+ * @api public
+ */
+
+exports = module.exports = function(searchInput) {
+  // Keyboard Events
+  if (searchInput && 'object' === typeof searchInput) {
+    var hasKeyCode = searchInput.which || searchInput.keyCode || searchInput.charCode
+    if (hasKeyCode) searchInput = hasKeyCode
+  }
+
+  // Numbers
+  if ('number' === typeof searchInput) return names[searchInput]
+
+  // Everything else (cast to string)
+  var search = String(searchInput)
+
+  // check codes
+  var foundNamedKey = codes[search.toLowerCase()]
+  if (foundNamedKey) return foundNamedKey
+
+  // check aliases
+  var foundNamedKey = aliases[search.toLowerCase()]
+  if (foundNamedKey) return foundNamedKey
+
+  // weird character?
+  if (search.length === 1) return search.charCodeAt(0)
+
+  return undefined
+}
+
+/**
+ * Get by name
+ *
+ *   exports.code['enter'] // => 13
+ */
+
+var codes = exports.code = exports.codes = {
+  'backspace': 8,
+  'tab': 9,
+  'enter': 13,
+  'shift': 16,
+  'ctrl': 17,
+  'alt': 18,
+  'pause/break': 19,
+  'caps lock': 20,
+  'esc': 27,
+  'space': 32,
+  'page up': 33,
+  'page down': 34,
+  'end': 35,
+  'home': 36,
+  'left': 37,
+  'up': 38,
+  'right': 39,
+  'down': 40,
+  'insert': 45,
+  'delete': 46,
+  'command': 91,
+  'right click': 93,
+  'numpad *': 106,
+  'numpad +': 107,
+  'numpad -': 109,
+  'numpad .': 110,
+  'numpad /': 111,
+  'num lock': 144,
+  'scroll lock': 145,
+  'my computer': 182,
+  'my calculator': 183,
+  ';': 186,
+  '=': 187,
+  ',': 188,
+  '-': 189,
+  '.': 190,
+  '/': 191,
+  '`': 192,
+  '[': 219,
+  '\\': 220,
+  ']': 221,
+  "'": 222,
+}
+
+// Helper aliases
+
+var aliases = exports.aliases = {
+  'windows': 91,
+  '⇧': 16,
+  '⌥': 18,
+  '⌃': 17,
+  '⌘': 91,
+  'ctl': 17,
+  'control': 17,
+  'option': 18,
+  'pause': 19,
+  'break': 19,
+  'caps': 20,
+  'return': 13,
+  'escape': 27,
+  'spc': 32,
+  'pgup': 33,
+  'pgdn': 33,
+  'ins': 45,
+  'del': 46,
+  'cmd': 91
+}
+
+
+/*!
+ * Programatically add the following
+ */
+
+// lower case chars
+for (i = 97; i < 123; i++) codes[String.fromCharCode(i)] = i - 32
+
+// numbers
+for (var i = 48; i < 58; i++) codes[i - 48] = i
+
+// function keys
+for (i = 1; i < 13; i++) codes['f'+i] = i + 111
+
+// numpad keys
+for (i = 0; i < 10; i++) codes['numpad '+i] = i + 96
+
+/**
+ * Get by code
+ *
+ *   exports.name[13] // => 'Enter'
+ */
+
+var names = exports.names = exports.title = {} // title for backward compat
+
+// Create reverse mapping
+for (i in codes) names[codes[i]] = i
+
+// Add aliases
+for (var alias in aliases) {
+  codes[alias] = aliases[alias]
+}
+
+},{}],12:[function(require,module,exports){
 //  Ramda v0.15.1
 //  https://github.com/ramda/ramda
 //  (c) 2013-2015 Scott Sauyet, Michael Hurley, and David Chambers
