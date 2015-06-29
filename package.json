@@ -1,7 +1,7 @@
 {
   "name": "flyd-keyboard",
   "version": "1.0.0",
-  "description": "Drop repeated values with Flyd",
+  "description": "Keyboard as Flyd streams",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
