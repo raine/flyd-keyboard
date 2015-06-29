@@ -1,6 +1,6 @@
 {
   "name": "flyd-keyboard",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Keyboard as Flyd streams",
   "main": "index.js",
   "scripts": {
