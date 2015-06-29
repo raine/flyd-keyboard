@@ -13,4 +13,4 @@ arrows$.map(function() {
 });
 ```
 
-[Example](http://raine.github.io/flyd-keyboard/)
+[Example](http://raine.github.io/flyd-keyboard/box)
