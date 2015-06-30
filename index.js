@@ -6,13 +6,13 @@ var flyd = require('flyd');
 var scanMerge = require('flyd-scanmerge');
 
 exports.keysDown = function() {
-  var kd = stream();
-  var ku = stream();
+  var kds = stream();
+  var kus = stream();
   var keysDown = scanMerge([
-    [kd, function(mem, c) {
+    [kds, function(mem, c) {
       return mem.concat(c);
     }],
-    [ku, function(mem, c) {
+    [kus, function(mem, c) {
       return mem.filter(function(x) {
         return x !== c;
       });
@@ -21,16 +21,16 @@ exports.keysDown = function() {
 
   document.addEventListener('keydown', function(ev) {
     // Prevent repeated events for the same key.
-    // dropRepeats can't be used on `kd` because it won't deactivate after
-    // `ku` has fired for the same key. Other (heavier?) option would be to
+    // dropRepeats can't be used on `kds` because it won't deactivate after
+    // `kus` has fired for the same key. Other (heavier?) option would be to
     // do dropRepeatsWith(deepEqual) for keysDown.
 
     var c = ev.keyCode;
-    if (keysDown().indexOf(c) < 0) kd(c);
+    if (keysDown().indexOf(c) < 0) kds(c);
   }, false);
 
   document.addEventListener('keyup', function(ev) {
-    ku(ev.keyCode);
+    kus(ev.keyCode);
   }, false);
 
   return keysDown;
