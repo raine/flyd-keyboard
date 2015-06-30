@@ -26,7 +26,7 @@ var render = pipe(String.fromCharCode, function (key) {
 
 flyd.on(render, presses$);
 
-},{"../../":3,"../utils":2,"flyd":5,"keycode":12,"ramda":13}],2:[function(require,module,exports){
+},{"../../":3,"../utils":2,"flyd":6,"keycode":13,"ramda":14}],2:[function(require,module,exports){
 'use strict';
 
 var _require = require('ramda');
@@ -44,30 +44,42 @@ module.exports = {
   setProp: setProp, setInnerHTML: setInnerHTML, stringify: stringify
 };
 
-},{"ramda":13}],3:[function(require,module,exports){
+},{"ramda":14}],3:[function(require,module,exports){
 'use strict';
 
 var stream = require('flyd').stream;
 var dropRepeats = require('flyd-droprepeats').dropRepeats;
 var dropRepeatsWith = require('flyd-droprepeats').dropRepeatsWith;
 var keycode = require('keycode');
+var flyd = require('flyd');
+var scanMerge = require('flyd-scanmerge');
 
 exports.keysDown = function () {
   var kd = stream();
   var ku = stream();
+  var keysDown = scanMerge([[kd, function (mem, c) {
+    return mem.concat(c);
+  }], [ku, function (mem, c) {
+    return mem.filter(function (x) {
+      return x !== c;
+    });
+  }]], []);
 
   document.addEventListener('keydown', function (ev) {
-    kd(ev.keyCode);
+    // Prevent repeated events for the same key.
+    // dropRepeats can't be used on `kd` because it won't deactivate after
+    // `ku` has fired for the same key. Other (heavier?) option would be to
+    // do dropRepeatsWith(deepEqual) for keysDown.
+
+    var c = ev.keyCode;
+    if (keysDown().indexOf(c) < 0) kd(c);
   }, false);
 
   document.addEventListener('keyup', function (ev) {
     ku(ev.keyCode);
   }, false);
 
-  kd.map(console.log.bind(console));
-  ku.map(console.log.bind(console));
-
-  return kd;
+  return keysDown;
 };
 
 exports.presses = function () {
@@ -121,7 +133,7 @@ function eqCoords(a, b) {
   return a && b && a.x === b.x && a.y === b.y;
 };
 
-},{"flyd":5,"flyd-droprepeats":4,"keycode":12}],4:[function(require,module,exports){
+},{"flyd":6,"flyd-droprepeats":4,"flyd-scanmerge":5,"keycode":13}],4:[function(require,module,exports){
 var flyd = require('flyd');
 
 function dropRepeatsWith(eq, s) {
@@ -144,7 +156,22 @@ function strictEq(a, b) {
   return a === b;
 }
 
-},{"flyd":5}],5:[function(require,module,exports){
+},{"flyd":6}],5:[function(require,module,exports){
+var flyd = require('flyd');
+
+module.exports = flyd.curryN(2, function(pairs, acc) {
+  var streams = pairs.map(function(p) { return p[0]; });
+  var fns = pairs.map(function(p) { return p[1]; });
+  return flyd.immediate(flyd.stream(streams, function(self, changed) {
+    if (changed.length > 0) {
+      var idx = streams.indexOf(changed[0]);
+      acc = fns[idx](acc, changed[0]());
+    }
+    return acc;
+  }));
+});
+
+},{"flyd":6}],6:[function(require,module,exports){
 var curryN = require('ramda/src/curryN');
 
 'use strict';
@@ -433,7 +460,7 @@ module.exports = {
   immediate: immediate,
 };
 
-},{"ramda/src/curryN":8}],6:[function(require,module,exports){
+},{"ramda/src/curryN":9}],7:[function(require,module,exports){
 /**
  * A special placeholder value used to specify "gaps" within curried functions,
  * allowing partial application of any combination of arguments,
@@ -460,7 +487,7 @@ module.exports = {
  */
 module.exports = {ramda: 'placeholder'};
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 
 
@@ -507,7 +534,7 @@ module.exports = _curry2(function(n, fn) {
   }
 });
 
-},{"./internal/_curry2":10}],8:[function(require,module,exports){
+},{"./internal/_curry2":11}],9:[function(require,module,exports){
 var __ = require('./__');
 var _curry2 = require('./internal/_curry2');
 var _slice = require('./internal/_slice');
@@ -585,7 +612,7 @@ module.exports = _curry2(function curryN(length, fn) {
   });
 });
 
-},{"./__":6,"./arity":7,"./internal/_curry2":10,"./internal/_slice":11}],9:[function(require,module,exports){
+},{"./__":7,"./arity":8,"./internal/_curry2":11,"./internal/_slice":12}],10:[function(require,module,exports){
 var __ = require('../__');
 
 
@@ -609,7 +636,7 @@ module.exports = function _curry1(fn) {
   };
 };
 
-},{"../__":6}],10:[function(require,module,exports){
+},{"../__":7}],11:[function(require,module,exports){
 var __ = require('../__');
 var _curry1 = require('./_curry1');
 
@@ -643,7 +670,7 @@ module.exports = function _curry2(fn) {
   };
 };
 
-},{"../__":6,"./_curry1":9}],11:[function(require,module,exports){
+},{"../__":7,"./_curry1":10}],12:[function(require,module,exports){
 /**
  * An optimized, private array `slice` implementation.
  *
@@ -676,7 +703,7 @@ module.exports = function _slice(args, from, to) {
   }
 };
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // Source: http://jsfiddle.net/vWx8V/
 // http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
 
@@ -825,7 +852,7 @@ for (var alias in aliases) {
   codes[alias] = aliases[alias]
 }
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 //  Ramda v0.15.1
 //  https://github.com/ramda/ramda
 //  (c) 2013-2015 Scott Sauyet, Michael Hurley, and David Chambers
