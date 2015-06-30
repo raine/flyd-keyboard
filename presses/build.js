@@ -6,31 +6,27 @@ var flyd = require('flyd');
 var _require = require('../utils');
 
 var setInnerHTML = _require.setInnerHTML;
+var stringify = _require.stringify;
 
 var kb = require('../../');
+var keycode = require('keycode');
+var stream = flyd.stream;
 
 var _require2 = require('ramda');
 
 var __ = _require2.__;
 var pipe = _require2.pipe;
-var add = _require2.add;
-var liftN = _require2.liftN;
-var join = _require2.join;
 
-var enter$ = kb.key('enter');
-var times$ = flyd.scan(add, 0, enter$.map(Number));
-// flyd.on(console.log.bind(console), enter$)
+var presses$ = kb.presses();
+flyd.on(console.log.bind(console), presses$);
 
-var plural = function plural(word, n) {
-  return word + (n === 1 ? '' : 's');
-};
-var render = pipe(function (state, n) {
-  return ['Enter is ' + (state ? 'down' : 'up') + '.', 'Enter has been pressed ' + n + ' ' + plural('time', n) + '.'];
-}, join('<br>'), setInnerHTML(__, document.body));
+var render = pipe(String.fromCharCode, function (key) {
+  return 'You pressed <code>"' + key + '"</code>.';
+}, setInnerHTML(__, document.body));
 
-liftN(2, render)(enter$, times$);
+flyd.on(render, presses$);
 
-},{"../../":3,"../utils":2,"flyd":5,"ramda":13}],2:[function(require,module,exports){
+},{"../../":3,"../utils":2,"flyd":5,"keycode":12,"ramda":13}],2:[function(require,module,exports){
 'use strict';
 
 var _require = require('ramda');

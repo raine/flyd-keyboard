@@ -4,29 +4,28 @@
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
 var flyd = require('flyd');
+
+var _require = require('../utils');
+
+var setInnerHTML = _require.setInnerHTML;
+var stringify = _require.stringify;
+
 var kb = require('../../');
 var stream = flyd.stream;
 
-var _require = require('ramda');
+var _require2 = require('ramda');
 
-var __ = _require.__;
-var liftN = _require.liftN;
-var curry = _require.curry;
-var pipe = _require.pipe;
-var always = _require.always;
-var merge = _require.merge;
-var props = _require.props;
-var apply = _require.apply;
-var identity = _require.identity;
-var unapply = _require.unapply;
-var partialRight = _require.partialRight;
-var zipObj = _require.zipObj;
-
-var setProp = curry(function (prop, value, obj) {
-  return obj[prop] = value;
-});
-var setInnerHTML = setProp('innerHTML');
-var stringify = partialRight(JSON.stringify, null, 2);
+var __ = _require2.__;
+var liftN = _require2.liftN;
+var curry = _require2.curry;
+var pipe = _require2.pipe;
+var always = _require2.always;
+var merge = _require2.merge;
+var props = _require2.props;
+var apply = _require2.apply;
+var identity = _require2.identity;
+var unapply = _require2.unapply;
+var zipObj = _require2.zipObj;
 
 var setPos = curry(function (elem, left, top) {
   elem.style.left = left + 'px';
@@ -89,13 +88,41 @@ var printStreams = pipe(unapply(identity), zipObj(['arrows', 'box']), stringify,
 
 liftN(2, printStreams)(arrows$, model$);
 
-},{"../../":2,"flyd":4,"ramda":12}],2:[function(require,module,exports){
+},{"../../":3,"../utils":2,"flyd":5,"ramda":13}],2:[function(require,module,exports){
+'use strict';
+
+var _require = require('ramda');
+
+var curry = _require.curry;
+var partialRight = _require.partialRight;
+
+var setProp = curry(function (prop, value, obj) {
+  return obj[prop] = value;
+});
+var setInnerHTML = setProp('innerHTML');
+var stringify = partialRight(JSON.stringify, null, 2);
+
+module.exports = {
+  setProp: setProp, setInnerHTML: setInnerHTML, stringify: stringify
+};
+
+},{"ramda":13}],3:[function(require,module,exports){
 'use strict';
 
 var stream = require('flyd').stream;
 var dropRepeats = require('flyd-droprepeats').dropRepeats;
 var dropRepeatsWith = require('flyd-droprepeats').dropRepeatsWith;
 var keycode = require('keycode');
+
+exports.presses = function () {
+  var presses = stream();
+
+  document.addEventListener('keypress', function (ev) {
+    presses(ev.keyCode);
+  }, false);
+
+  return presses;
+};
 
 exports.key = function (key) {
   var ks = stream(false);
@@ -138,7 +165,7 @@ function eqCoords(a, b) {
   return a && b && a.x === b.x && a.y === b.y;
 };
 
-},{"flyd":4,"flyd-droprepeats":3,"keycode":11}],3:[function(require,module,exports){
+},{"flyd":5,"flyd-droprepeats":4,"keycode":12}],4:[function(require,module,exports){
 var flyd = require('flyd');
 
 function dropRepeatsWith(eq, s) {
@@ -161,7 +188,7 @@ function strictEq(a, b) {
   return a === b;
 }
 
-},{"flyd":4}],4:[function(require,module,exports){
+},{"flyd":5}],5:[function(require,module,exports){
 var curryN = require('ramda/src/curryN');
 
 'use strict';
@@ -450,7 +477,7 @@ module.exports = {
   immediate: immediate,
 };
 
-},{"ramda/src/curryN":7}],5:[function(require,module,exports){
+},{"ramda/src/curryN":8}],6:[function(require,module,exports){
 /**
  * A special placeholder value used to specify "gaps" within curried functions,
  * allowing partial application of any combination of arguments,
@@ -477,7 +504,7 @@ module.exports = {
  */
 module.exports = {ramda: 'placeholder'};
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var _curry2 = require('./internal/_curry2');
 
 
@@ -524,7 +551,7 @@ module.exports = _curry2(function(n, fn) {
   }
 });
 
-},{"./internal/_curry2":9}],7:[function(require,module,exports){
+},{"./internal/_curry2":10}],8:[function(require,module,exports){
 var __ = require('./__');
 var _curry2 = require('./internal/_curry2');
 var _slice = require('./internal/_slice');
@@ -602,7 +629,7 @@ module.exports = _curry2(function curryN(length, fn) {
   });
 });
 
-},{"./__":5,"./arity":6,"./internal/_curry2":9,"./internal/_slice":10}],8:[function(require,module,exports){
+},{"./__":6,"./arity":7,"./internal/_curry2":10,"./internal/_slice":11}],9:[function(require,module,exports){
 var __ = require('../__');
 
 
@@ -626,7 +653,7 @@ module.exports = function _curry1(fn) {
   };
 };
 
-},{"../__":5}],9:[function(require,module,exports){
+},{"../__":6}],10:[function(require,module,exports){
 var __ = require('../__');
 var _curry1 = require('./_curry1');
 
@@ -660,7 +687,7 @@ module.exports = function _curry2(fn) {
   };
 };
 
-},{"../__":5,"./_curry1":8}],10:[function(require,module,exports){
+},{"../__":6,"./_curry1":9}],11:[function(require,module,exports){
 /**
  * An optimized, private array `slice` implementation.
  *
@@ -693,7 +720,7 @@ module.exports = function _slice(args, from, to) {
   }
 };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 // Source: http://jsfiddle.net/vWx8V/
 // http://stackoverflow.com/questions/5603195/full-list-of-javascript-keycodes
 
@@ -842,7 +869,7 @@ for (var alias in aliases) {
   codes[alias] = aliases[alias]
 }
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 //  Ramda v0.15.1
 //  https://github.com/ramda/ramda
 //  (c) 2013-2015 Scott Sauyet, Michael Hurley, and David Chambers

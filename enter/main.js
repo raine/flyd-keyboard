@@ -1,11 +1,7 @@
 const flyd = require('flyd');
+const {setInnerHTML} = require('../utils');
 const kb = require('../../');
-const {stream} = flyd;
-const {__, curry, pipe, partialRight, T, add, liftN, join} = require('ramda');
-
-const setProp = curry((prop, value, obj) => obj[prop] = value);
-const setInnerHTML = setProp('innerHTML');
-const stringify = partialRight(JSON.stringify, null, 2);
+const {__, pipe, add, liftN, join} = require('ramda');
 
 const enter$ = kb.key('enter');
 const times$ = flyd.scan(add, 0, enter$.map(Number));

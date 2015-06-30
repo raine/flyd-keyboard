@@ -1,11 +1,8 @@
 const flyd = require('flyd');
+const {setInnerHTML, stringify} = require('../utils');
 const kb = require('../../');
 const {stream} = flyd;
-const {__, liftN, curry, pipe, always, merge, props, apply, identity, unapply, partialRight, zipObj} = require('ramda');
-
-const setProp = curry((prop, value, obj) => obj[prop] = value);
-const setInnerHTML = setProp('innerHTML');
-const stringify = partialRight(JSON.stringify, null, 2);
+const {__, liftN, curry, pipe, always, merge, props, apply, identity, unapply, zipObj} = require('ramda');
 
 const setPos = curry((elem, left, top) => {
   elem.style.left = left + 'px';
