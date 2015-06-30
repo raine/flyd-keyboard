@@ -36,6 +36,14 @@ Emits a list of keys as keycodes that are currently held down.
 var keysDown$ = kb.keysDown();
 ```
 
+### `keyDowns()`
+
+Emits keydown events as keycodes.
+
+```js
+var keyDowns = kb.keyDowns();
+```
+
 ### examples
 
 - [box](http://raine.github.io/flyd-keyboard/box)

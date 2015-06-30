@@ -5,26 +5,16 @@ var keycode = require('keycode');
 var flyd = require('flyd');
 var scanMerge = require('flyd-scanmerge');
 
-exports.keysDown = function() {
+exports.keysDown = keysDown = function() {
   var kds = stream();
   var kus = stream();
-  var keysDown = scanMerge([
-    [kds, function(mem, c) {
-      return mem.concat(c);
-    }],
-    [kus, function(mem, c) {
-      return mem.filter(function(x) {
-        return x !== c;
-      });
-    }],
-  ], []);
+  var keysDown = state(kds, kus);
 
   document.addEventListener('keydown', function(ev) {
     // Prevent repeated events for the same key.
     // dropRepeats can't be used on `kds` because it won't deactivate after
     // `kus` has fired for the same key. Other (heavier?) option would be to
     // do dropRepeatsWith(deepEqual) for keysDown.
-
     var c = ev.keyCode;
     if (keysDown().indexOf(c) < 0) kds(c);
   }, false);
@@ -35,6 +25,18 @@ exports.keysDown = function() {
 
   return keysDown;
 };
+
+exports.keyDowns$ = (function() {
+  var prev = [];
+  var keysDown$ = keysDown();
+  return stream([keysDown$], function(self) {
+    var cur  = keysDown$();
+    var last = cur.slice(-1)[0];
+    if (last && prev.indexOf(last) < 0)
+      self(last);
+    prev = cur;
+  });
+}());
 
 exports.presses = function() {
   var presses = stream();
@@ -93,3 +95,16 @@ exports.arrows = function(elem) {
 function eqCoords(a, b) {
   return a && b && a.x === b.x && a.y === b.y;
 };
+
+function state(add, remove) {
+  return scanMerge([
+    [add, function(mem, a) {
+      return mem.concat(a);
+    }],
+    [remove, function(mem, a) {
+      return mem.filter(function(b) {
+        return a !== b;
+      });
+    }],
+  ], []);
+}
