@@ -26,7 +26,7 @@ exports.keysDown = keysDown = function() {
   return keysDown;
 };
 
-exports.keyDowns$ = (function() {
+exports.keyDowns = function() {
   var prev = [];
   var keysDown$ = keysDown();
   return stream([keysDown$], function(self) {
@@ -36,7 +36,7 @@ exports.keyDowns$ = (function() {
       self(last);
     prev = cur;
   });
-}());
+};
 
 exports.presses = function() {
   var presses = stream();
