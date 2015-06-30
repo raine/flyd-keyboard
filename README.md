@@ -28,8 +28,17 @@ Emits ASCII codes of pressed keys.
 var presses$ = kb.presses();
 ```
 
+### keysDown()
+
+Emits a list of keys as keycodes that are currently held down.
+
+```js
+var keysDown$ = kb.keysDown();
+```
+
 ### examples
 
 - [box](http://raine.github.io/flyd-keyboard/box)
 - [enter](http://raine.github.io/flyd-keyboard/enter)
 - [presses](http://raine.github.io/flyd-keyboard/presses)
+- [keysdown](http://raine.github.io/flyd-keyboard/keysdown)

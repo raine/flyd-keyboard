@@ -2,6 +2,39 @@ var stream = require('flyd').stream;
 var dropRepeats = require('flyd-droprepeats').dropRepeats;
 var dropRepeatsWith = require('flyd-droprepeats').dropRepeatsWith;
 var keycode = require('keycode');
+var flyd = require('flyd');
+var scanMerge = require('flyd-scanmerge');
+
+exports.keysDown = function() {
+  var kd = stream();
+  var ku = stream();
+  var keysDown = scanMerge([
+    [kd, function(mem, c) {
+      return mem.concat(c);
+    }],
+    [ku, function(mem, c) {
+      return mem.filter(function(x) {
+        return x !== c;
+      });
+    }],
+  ], []);
+
+  document.addEventListener('keydown', function(ev) {
+    // Prevent repeated events for the same key.
+    // dropRepeats can't be used on `kd` because it won't deactivate after
+    // `ku` has fired for the same key. Other (heavier?) option would be to
+    // do dropRepeatsWith(deepEqual) for keysDown.
+
+    var c = ev.keyCode;
+    if (keysDown().indexOf(c) < 0) kd(c);
+  }, false);
+
+  document.addEventListener('keyup', function(ev) {
+    ku(ev.keyCode);
+  }, false);
+
+  return keysDown;
+};
 
 exports.presses = function() {
   var presses = stream();

@@ -12,6 +12,7 @@
   "dependencies": {
     "flyd": "^0.1.13",
     "flyd-droprepeats": "^2.0.0",
+    "flyd-scanmerge": "0.0.3",
     "keycode": "^2.1.0"
   },
   "devDependencies": {
