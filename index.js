@@ -3,6 +3,16 @@ var dropRepeats = require('flyd-droprepeats').dropRepeats;
 var dropRepeatsWith = require('flyd-droprepeats').dropRepeatsWith;
 var keycode = require('keycode');
 
+exports.presses = function() {
+  var presses = stream();
+
+  document.addEventListener('keypress', function(ev) {
+    presses(ev.keyCode);
+  }, false);
+  
+  return presses;
+};
+
 exports.key = function(key) {
   var ks = stream(false);
   var code = keycode(key);
