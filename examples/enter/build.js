@@ -59,7 +59,7 @@ var keycode = require('keycode');
 exports.presses = function () {
   var presses = stream();
 
-  document.addEventListener('keypress', function () {
+  document.addEventListener('keypress', function (ev) {
     presses(ev.keyCode);
   }, false);
 
