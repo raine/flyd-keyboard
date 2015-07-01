@@ -50,3 +50,4 @@ var keyDowns = kb.keyDowns();
 - [enter](http://raine.github.io/flyd-keyboard/enter)
 - [presses](http://raine.github.io/flyd-keyboard/presses)
 - [keysdown](http://raine.github.io/flyd-keyboard/keysdown)
+- [konami-code](http://raine.github.io/flyd-playground/konami-code/)
